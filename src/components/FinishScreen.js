@@ -14,14 +14,12 @@ function FinishScreen({points , maxPoints , highscore, dispatch}){
           {maxPoints} ({percentage}%)
         </p>
         <p className="highscore"> (HighScore: {highscore} points)</p>
-        return (
         <button
           className="btn btn-ui"
           onClick={() => dispatch({ type: "restart" })}
         >
           Restart Quiz
         </button>
-        );
       </>
     );
 }

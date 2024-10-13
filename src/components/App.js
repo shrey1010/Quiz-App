@@ -8,15 +8,19 @@ import Question from "./Question";
 import NextButton from "./NextButton";
 import Progress from "./Progress";
 import FinishScreen from "./FinishScreen";
+import QuizTimer from "./QuizTimer.js";
 
 const initialState = {
   questions: [],
   status: "loading",
   index: 0,
-  answer:null,
-  points:0,
-  highscore:0,
+  answer: null,
+  points: 0,
+  highscore: 0,
+  secondsRemaining: null,
 };
+
+const SECS_PER_QUESTION = 30;
 
 function reducer(state = initialState, action) {
   switch (action.type) {
@@ -25,7 +29,7 @@ function reducer(state = initialState, action) {
     case "dataFailed":
       return { ...state, status: "error" };
     case "start":
-      return { ...state, status: "active" };
+      return { ...state, status: "active",secondsRemaining:state.questions.length * SECS_PER_QUESTION };
     case "newAnswer":
       const question = state.questions.at(state.index)
       return {
@@ -42,13 +46,15 @@ function reducer(state = initialState, action) {
       return { ...state, status: "finished" ,highscore:state.points >state.highscore ? state.points :state.highscore };
     case "restart":
       return initialState   
+    case "tick":
+      return { ...state, secondsRemaining: state.secondsRemaining - 1,status: state.secondsRemaining===0 ? "finished":state.status };
     default:
       throw new Error("Action Unknown");
   }
 }
 
 export default function App() {
-  const [{ questions, status, index,answer,points,highscore }, dispatch] = useReducer(
+  const [{ questions, status, index,answer,points,highscore,secondsRemaining }, dispatch] = useReducer(
     reducer,
     initialState
   );
@@ -86,10 +92,25 @@ export default function App() {
               dispatch={dispatch}
               answer={answer}
             />
-            <NextButton dispatch={dispatch} answer={answer} index={index} numQuestions={numQuestions} />
+            <footer>
+              <QuizTimer dispatch={dispatch} secondsRemaining={secondsRemaining} />
+              <NextButton
+                dispatch={dispatch}
+                answer={answer}
+                index={index}
+                numQuestions={numQuestions}
+              />
+            </footer>
           </>
         )}
-        {status === "finished" && (<FinishScreen points={points} maxPoints={maxPoints} highscore={highscore} dispatch={dispatch} />)}
+        {status === "finished" && (
+          <FinishScreen
+            points={points}
+            maxPoints={maxPoints}
+            highscore={highscore}
+            dispatch={dispatch}
+          />
+        )}
       </Main>
     </div>
   );
